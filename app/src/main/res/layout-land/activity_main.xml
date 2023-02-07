@@ -3,7 +3,9 @@
 reading chapters 1 through 5.   I did not use the Design pane
 to create this code, and it was good to look at building elements of that from the code side of things
 this time. -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<!--Noted: We change the LinearLayout for FrameLayout tag, as well as altered some gravities.-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools"
@@ -14,14 +16,14 @@ this time. -->
         android:id="@+id/question_text_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="center"
+        android:layout_gravity="center_horizontal"
         android:padding="24dp"
         tools:text="@string/question_australia"
         />
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_gravity="center_vertical|center_horizontal">
 
         <Button
             android:id="@+id/true_button"
@@ -43,8 +45,9 @@ this time. -->
         android:id="@+id/next_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
         android:text="@string/next_button"
         android:drawableEnd="@drawable/arrow_right"
         android:drawablePadding="4dp"
         />
-</LinearLayout>
+</FrameLayout>
