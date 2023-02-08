@@ -1,6 +1,9 @@
 package com.example.geoquiz
 
+import android.app.Activity
+import android.app.ActivityOptions
 import android.content.Intent
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -8,8 +11,6 @@ import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.result.ActivityResult
 import androidx.lifecycle.ViewModelProviders
 
 
@@ -33,6 +34,18 @@ class MainActivity : AppCompatActivity() {
         ViewModelProviders.of(this).get(QuizViewModel::class.java)
     }
 
+
+    @Deprecated("Deprecated in Java")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode != Activity.RESULT_OK) {
+            return
+        }
+        if (requestCode == REQUEST_CODE_CHEAT) {
+            quizViewModel.isCheater =
+                data?.getBooleanExtra(EXTRA_ANSWER_SHOWN, false) ?: false
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,19 +73,22 @@ class MainActivity : AppCompatActivity() {
             quizViewModel.moveToNext()
             updateQuestion()
         }
-        cheatButton.setOnClickListener {
-            startCheatActivity()
+        cheatButton.setOnClickListener {view ->
+
+            val answerIsTrue = quizViewModel.currentQuestionAnswer
+            val intent = CheatActivity.newIntent(this@MainActivity, answerIsTrue)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                val options = ActivityOptions
+                    .makeClipRevealAnimation(view, 0, 0, view.width, view.height)
+//        startActivity(intent)
+                startActivityForResult(intent, REQUEST_CODE_CHEAT, options.toBundle())
+            } else { startActivityForResult(intent, REQUEST_CODE_CHEAT) }
         }
 
         updateQuestion()
     }
 
-    private fun startCheatActivity() {
-        val answerIsTrue = quizViewModel.currentQuestionAnswer
-        val intent = CheatActivity.newIntent(this@MainActivity, answerIsTrue)
-//        startActivity(intent)
-        startActivityForResult(intent, REQUEST_CODE_CHEAT)
-    }
+
 
     override fun onSaveInstanceState(savedInstanceState: Bundle) {
         super.onSaveInstanceState(savedInstanceState)
@@ -88,12 +104,11 @@ class MainActivity : AppCompatActivity() {
     private fun checkAnswer(userAnswer: Boolean) {
         val correctAnswer = quizViewModel.currentQuestionAnswer
 
-        val messageResId =
-            if (userAnswer == correctAnswer) {
-                R.string.correct_toast
-            } else {
-                R.string.incorrect_toast
-            }
+        val messageResId = when {
+            quizViewModel.isCheater -> R.string.judgement_toast
+            userAnswer == correctAnswer -> R.string.correct_toast
+            else -> R.string.incorrect_toast
+        }
         Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show()
     }
 }
